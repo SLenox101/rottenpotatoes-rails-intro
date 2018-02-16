@@ -12,12 +12,27 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = ['G', 'PG', 'PG-13', 'R']  
+    @movies = Movie.all
+    
+    # Fill in missing session ratings
     if(!session[:ratings])
       session[:ratings] = @all_ratings
     end
     
-    @movies = Movie.all
+    # Fill in missing params from the session
+    if(!params[:sort] and session[:sort])
+      params[:sort] = session[:sort]
+      #flash.keep
+      #redirect_to(movies_path(:sort => session[:sort]))
+    end
+    
+    if(!params[:ratings] and session[:ratings] and session[:ratings].keys)
+      params[:ratings] = session[:ratings]
+      #flash.keep
+      #redirect_to(movies_path(:ratings => session[:ratings]))
+    end
    
+    # Filter/Order Movies
     if(params[:ratings] and params[:ratings].keys)
       @movies = @movies.where(:rating => params[:ratings].keys)
       session[:ratings] = params[:ratings]
@@ -25,9 +40,12 @@ class MoviesController < ApplicationController
     
     if(params[:sort].to_s == "title")
       @movies = @movies.order("movies.title ASC")
-    else
+      session[:sort] = params[:sort]
+    elsif(params[:sort].to_s == "release_date")
       @movies = @movies.order("movies.release_date ASC")
+      session[:sort] = params[:sort]
     end
+  
   end
 
   def new
