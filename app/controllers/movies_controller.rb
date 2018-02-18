@@ -11,7 +11,7 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = ['G', 'PG', 'PG-13', 'R']  
+    @all_ratings = ['G', 'PG', 'PG-13', 'R']
     @movies = Movie.all
     
     # Fill in missing session ratings
@@ -19,30 +19,34 @@ class MoviesController < ApplicationController
       session[:ratings] = @all_ratings
     end
     
-    # Fill in missing params from the session
-    if(!params[:sort] and session[:sort])
+    # Fill in missing params
+    if(params[:sort] == nil and params[:ratings] == nil and (session[:sort] != nil or session[:ratings] != nil))
+      if(params[:sort] == nil and session[:sort] != nil)
+        params[:sort] = session[:sort]
+      end
+      if(params[:ratings] == nil and session[:ratings] != nil)
+        params[:ratings] = session[:ratings]
+      end
+      flash.keep
+      redirect_to movies_path(:sort => params[:sort], :ratings => params[:ratings])
+    elsif(params[:sort] == nil and session[:sort] != nil)
       params[:sort] = session[:sort]
-      #flash.keep
-      #redirect_to(movies_path(:sort => session[:sort]))
-    end
-    
-    if(!params[:ratings] and session[:ratings] and session[:ratings].keys)
+      flash.keep
+      redirect_to movies_path(:sort => params[:sort], :ratings => params[:ratings])
+    elsif(params[:ratings] == nil and session[:ratings] != nil)
       params[:ratings] = session[:ratings]
-      #flash.keep
-      #redirect_to(movies_path(:ratings => session[:ratings]))
+      flash.keep
+      redirect_to movies_path(:sort => params[:sort], :ratings => params[:ratings])
     end
    
     # Filter/Order Movies
-    if(params[:ratings] and params[:ratings].keys)
+    if(params[:ratings])
       @movies = @movies.where(:rating => params[:ratings].keys)
       session[:ratings] = params[:ratings]
     end
     
-    if(params[:sort].to_s == "title")
-      @movies = @movies.order("movies.title ASC")
-      session[:sort] = params[:sort]
-    elsif(params[:sort].to_s == "release_date")
-      @movies = @movies.order("movies.release_date ASC")
+    if(params[:sort])
+      @movies = @movies.order(params[:sort])
       session[:sort] = params[:sort]
     end
   
