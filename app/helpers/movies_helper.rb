@@ -15,6 +15,10 @@ module MoviesHelper
   
   # Checks if box should be selected
   def box_checked?(rating)
-    return session[:ratings].include?(rating)
+    if(session[:ratings] == nil) # All boxes checked initially
+      return true
+    else
+      return session[:ratings].include?(rating)
+    end
   end
 end

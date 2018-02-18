@@ -13,12 +13,7 @@ class MoviesController < ApplicationController
   def index
     @all_ratings = ['G', 'PG', 'PG-13', 'R']
     @movies = Movie.all
-    
-    # Fill in missing session ratings
-    if(!session[:ratings])
-      session[:ratings] = @all_ratings
-    end
-    
+
     # Fill in missing params
     if(params[:sort] == nil and params[:ratings] == nil and (session[:sort] != nil or session[:ratings] != nil))
       if(params[:sort] == nil and session[:sort] != nil)
@@ -49,7 +44,6 @@ class MoviesController < ApplicationController
       @movies = @movies.order(params[:sort])
       session[:sort] = params[:sort]
     end
-  
   end
 
   def new
